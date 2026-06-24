@@ -1,0 +1,17 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data / environment
+.env
+node_modules/
+
+# Editor directories and files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.sw?
