@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
@@ -34,6 +35,7 @@ import { toast } from 'react-toastify';
 
 const GenerateTimetable = () => {
   const { school, activeAcademicYear } = useAuth();
+  const navigate = useNavigate();
   
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -135,7 +137,7 @@ const GenerateTimetable = () => {
   // grid[day][period] = { subject, teacherShortName, isLocked }
   const getGridData = () => {
     const grid = {};
-    if (!school) return grid;
+    if (!school || !school.schoolTimings) return grid;
 
     const { workingDays, periodsPerDay } = school.schoolTimings;
 
@@ -358,6 +360,28 @@ const GenerateTimetable = () => {
       setDraggedCell(null);
     }
   };
+
+  if (!school?.schoolTimings || !school?.schoolTimings?.workingDays || school.schoolTimings.workingDays.length === 0) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <Paper sx={{ p: 5, borderRadius: 3, maxWidth: 500, width: '100%', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+          <Typography variant="h5" color="error" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Timings & Schedule Not Configured
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+            Your school's working days and timings schedule have not been set up. Please configure them in settings to generate your timetable.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/settings')}
+            sx={{ bgcolor: '#1a237e', px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold' }}
+          >
+            Go to Settings
+          </Button>
+        </Paper>
+      </Box>
+    );
+  }
 
   return (
     <Box>
