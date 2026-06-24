@@ -8,10 +8,10 @@ import {
   Typography,
   TextField,
   Button,
-  Alert,
   CircularProgress,
   InputAdornment
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   School as SchoolIcon,
   Email,
@@ -31,16 +31,13 @@ const ForgotPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRequestReset = async (e) => {
     e.preventDefault();
-    setError('');
     
     if (!email || !mobile) {
-      setError('Please fill in both Email and Mobile number.');
+      toast.error('Please fill in both Email and Mobile number.');
       return;
     }
 
@@ -48,10 +45,10 @@ const ForgotPassword = () => {
     try {
       const response = await api.post('/auth/forgot-password', { email, mobile });
       setReceivedCode(response.data.resetCode);
-      setSuccessMsg(`Simulated Verification Code generated: ${response.data.resetCode}`);
+      toast.info(`Simulated Verification Code: ${response.data.resetCode}`, { autoClose: false });
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid details matching this school.');
+      toast.error(err.response?.data?.message || 'Invalid details matching this school.');
     } finally {
       setLoading(false);
     }
@@ -59,38 +56,36 @@ const ForgotPassword = () => {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccessMsg('');
 
     if (!inputCode || !newPassword || !confirmPassword) {
-      setError('Please fill in all fields.');
+      toast.error('Please fill in all fields.');
       return;
     }
 
     if (inputCode !== receivedCode) {
-      setError('Invalid verification code.');
+      toast.error('Invalid verification code.');
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      toast.error('Password must be at least 6 characters long.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
+      toast.error('Passwords do not match.');
       return;
     }
 
     setLoading(true);
     try {
       const response = await api.post('/auth/reset-password', { email, newPassword });
-      setSuccessMsg(response.data.message);
+      toast.success(response.data.message || 'Password reset successful!');
       setTimeout(() => {
         navigate('/login');
       }, 2500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reset password.');
+      toast.error(err.response?.data?.message || 'Failed to reset password.');
     } finally {
       setLoading(false);
     }
@@ -132,8 +127,7 @@ const ForgotPassword = () => {
             </Typography>
           </Box>
 
-          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
-          {successMsg && <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>{successMsg}</Alert>}
+          {/* react-toastify will handle verification alerts */}
 
           {step === 1 ? (
             <form onSubmit={handleRequestReset}>

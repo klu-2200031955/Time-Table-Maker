@@ -32,9 +32,9 @@ import {
   Checkbox,
   Select,
   MenuItem,
-  InputLabel,
-  Alert
+  InputLabel
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
@@ -53,7 +53,6 @@ const SetupWizard = () => {
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [error, setError] = useState('');
 
   // Search/Filters
   const [searchTeacher, setSearchTeacher] = useState('');
@@ -106,7 +105,6 @@ const SetupWizard = () => {
   };
 
   const handleNext = async () => {
-    setError('');
     if (activeStep === steps.length - 1) {
       // Step 3: Timing Setup - save profile
       try {
@@ -115,12 +113,13 @@ const SetupWizard = () => {
         };
         const result = await updateProfile(payload);
         if (result.success) {
+          toast.success('School settings updated successfully!');
           navigate('/');
         } else {
-          setError(result.message);
+          toast.error(result.message || 'Failed to save school timings settings.');
         }
       } catch (err) {
-        setError('Failed to save school timings settings.');
+        toast.error('Failed to save school timings settings.');
       }
     } else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -150,43 +149,47 @@ const SetupWizard = () => {
   };
 
   const handleDialogSave = async () => {
-    setError('');
     try {
       if (dialogType === 'teacher') {
         if (editItem) {
           const res = await api.put(`/teachers/${editItem._id}`, teacherForm);
           setTeachers(prev => prev.map(t => t._id === editItem._id ? res.data : t));
+          toast.success('Teacher updated successfully!');
         } else {
           const res = await api.post('/teachers', teacherForm);
           setTeachers(prev => [...prev, res.data]);
+          toast.success('Teacher added successfully!');
         }
       } else if (dialogType === 'class') {
         if (editItem) {
           const res = await api.put(`/classes/${editItem._id}`, classForm);
           setClasses(prev => prev.map(c => c._id === editItem._id ? res.data : c));
+          toast.success('Class section updated successfully!');
         } else {
           const res = await api.post('/classes', classForm);
           setClasses(prev => [...prev, res.data]);
+          toast.success('Class section added successfully!');
         }
       }
       setDialogOpen(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error occurred while saving item.');
+      toast.error(err.response?.data?.message || 'Error occurred while saving item.');
     }
   };
 
   const handleDeleteItem = async (type, id) => {
-    setError('');
     try {
       if (type === 'teacher') {
         await api.delete(`/teachers/${id}`);
         setTeachers(prev => prev.filter(t => t._id !== id));
+        toast.success('Teacher deleted successfully!');
       } else if (type === 'class') {
         await api.delete(`/classes/${id}`);
         setClasses(prev => prev.filter(c => c._id !== id));
+        toast.success('Class section deleted successfully!');
       }
     } catch (err) {
-      setError('Failed to delete item.');
+      toast.error('Failed to delete item.');
     }
   };
 
@@ -462,7 +465,7 @@ const SetupWizard = () => {
             ))}
           </Stepper>
 
-          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
+          {/* react-toastify will handle all wizard notification alerts */}
 
           <Box sx={{ minHeight: 280, mb: 4 }}>
             {renderStepContent(activeStep)}

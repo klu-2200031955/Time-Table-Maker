@@ -44,7 +44,6 @@ const GenerateTimetable = () => {
   
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState('');
   
   // Quick Edit Dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -112,7 +111,6 @@ const GenerateTimetable = () => {
   };
 
   const handleGenerate = async () => {
-    setError('');
     setGenerating(true);
     try {
       const res = await api.post('/timetable/generate', { academicYear: activeAcademicYear });
@@ -127,7 +125,7 @@ const GenerateTimetable = () => {
         setTimetable(currentClassEntries);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to generate timetable automatically.');
+      toast.error(err.response?.data?.message || 'Failed to generate timetable automatically.');
     } finally {
       setGenerating(false);
     }
@@ -390,8 +388,6 @@ const GenerateTimetable = () => {
           {generating ? 'Generating...' : 'Generate Timetable'}
         </Button>
       </Box>
-
-      {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }} onClose={() => setError('')}>{error}</Alert>}
 
       <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.03)', mb: 4 }}>
         <Grid container spacing={3} alignItems="center" sx={{ mb: 3 }}>

@@ -8,11 +8,11 @@ import {
   Typography,
   TextField,
   Button,
-  Alert,
   CircularProgress,
   InputAdornment,
   IconButton
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   School as SchoolIcon,
   Visibility,
@@ -31,7 +31,6 @@ const Login = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -41,10 +40,9 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     if (!formData.email || !formData.password) {
-      setError('Please fill in all fields.');
+      toast.error('Please fill in all fields.');
       return;
     }
 
@@ -55,7 +53,7 @@ const Login = () => {
     if (result.success) {
       navigate('/');
     } else {
-      setError(result.message);
+      toast.error(result.message);
     }
   };
 
@@ -94,8 +92,6 @@ const Login = () => {
               Manage your school and generate timetables
             </Typography>
           </Box>
-
-          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
           <form onSubmit={handleSubmit}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

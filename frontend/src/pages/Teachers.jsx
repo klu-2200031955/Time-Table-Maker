@@ -18,12 +18,12 @@ import {
   DialogContent,
   DialogActions,
   Grid,
-  Alert,
   Select,
   MenuItem,
   FormControl,
   InputLabel
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
@@ -37,8 +37,7 @@ const Teachers = () => {
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+
   
   const [form, setForm] = useState({
     fullName: '',
@@ -67,25 +66,18 @@ const Teachers = () => {
   const handleOpenAdd = () => {
     setEditItem(null);
     setForm({ fullName: '', shortName: '', subject: '', mobile: '' });
-    setError('');
-    setSuccess('');
     setDialogOpen(true);
   };
 
   const handleOpenEdit = (item) => {
     setEditItem(item);
     setForm({ ...item });
-    setError('');
-    setSuccess('');
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    setError('');
-    setSuccess('');
-
     if (!form.fullName || !form.shortName || !form.subject) {
-      setError('Full Name, Short Name, and Specialist Subject are required.');
+      toast.error('Full Name, Short Name, and Specialist Subject are required.');
       return;
     }
 
@@ -93,15 +85,15 @@ const Teachers = () => {
       if (editItem) {
         const res = await api.put(`/teachers/${editItem._id}`, form);
         setTeachers(prev => prev.map(t => t._id === editItem._id ? res.data : t));
-        setSuccess('Teacher details updated successfully.');
+        toast.success('Teacher details updated successfully.');
       } else {
         const res = await api.post('/teachers', form);
         setTeachers(prev => [...prev, res.data]);
-        setSuccess('Teacher added successfully.');
+        toast.success('Teacher added successfully.');
       }
       setDialogOpen(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error occurred while saving.');
+      toast.error(err.response?.data?.message || 'Error occurred while saving.');
     }
   };
 
@@ -109,14 +101,12 @@ const Teachers = () => {
     if (!window.confirm('Are you sure you want to delete this teacher? All related subject allocations will be permanently removed.')) {
       return;
     }
-    setError('');
-    setSuccess('');
     try {
       await api.delete(`/teachers/${id}`);
       setTeachers(prev => prev.filter(t => t._id !== id));
-      setSuccess('Teacher deleted successfully.');
+      toast.success('Teacher deleted successfully.');
     } catch (err) {
-      setError('Failed to delete teacher.');
+      toast.error('Failed to delete teacher.');
     }
   };
 
@@ -147,8 +137,7 @@ const Teachers = () => {
         </Button>
       </Box>
 
-      {success && <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError('')}>{error}</Alert>}
+      {/* react-toastify will handle teacher settings alerts */}
 
       <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
         <Box sx={{ display: 'flex', mb: 3 }}>

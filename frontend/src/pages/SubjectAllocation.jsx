@@ -25,9 +25,9 @@ import {
   ListItemText,
   OutlinedInput,
   Chip,
-  Alert,
   TextField
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
@@ -53,8 +53,7 @@ const SubjectAllocation = () => {
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+
 
   // Subject Workload Edit States
   const [subjectDialogOpen, setSubjectDialogOpen] = useState(false);
@@ -100,8 +99,6 @@ const SubjectAllocation = () => {
   const handleOpenAdd = () => {
     setEditItem(null);
     setForm({ teacherId: '', subjectId: '', classes: [] });
-    setError('');
-    setSuccess('');
     setDialogOpen(true);
   };
 
@@ -112,17 +109,12 @@ const SubjectAllocation = () => {
       subjectId: item.subjectId?._id || '',
       classes: item.classes?.map(c => c._id) || []
     });
-    setError('');
-    setSuccess('');
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    setError('');
-    setSuccess('');
-
     if (!form.teacherId || !form.subjectId || form.classes.length === 0) {
-      setError('Please choose a Teacher, a Subject, and at least one Class Section.');
+      toast.error('Please choose a Teacher, a Subject, and at least one Class Section.');
       return;
     }
 
@@ -130,17 +122,17 @@ const SubjectAllocation = () => {
       if (editItem) {
         const res = await api.put(`/allocations/${editItem._id}`, form);
         setAllocations(prev => prev.map(a => a._id === editItem._id ? res.data : a));
-        setSuccess('Allocation updated successfully.');
+        toast.success('Allocation updated successfully.');
       } else {
         const res = await api.post('/allocations', form);
         // If teacher-subject allocation existed, the backend appends classes to existing,
         // so we re-fetch to get clean synced state.
         await fetchData();
-        setSuccess('Subject allocated successfully.');
+        toast.success('Subject allocated successfully.');
       }
       setDialogOpen(false);
     } catch (err) {
-      setError(err.response?.data?.message || 'Error occurred while saving allocation.');
+      toast.error(err.response?.data?.message || 'Error occurred while saving allocation.');
     }
   };
 
@@ -148,28 +140,22 @@ const SubjectAllocation = () => {
     if (!window.confirm('Are you sure you want to delete this allocation?')) {
       return;
     }
-    setError('');
-    setSuccess('');
     try {
       await api.delete(`/allocations/${id}`);
       setAllocations(prev => prev.filter(a => a._id !== id));
-      setSuccess('Allocation removed successfully.');
+      toast.success('Allocation removed successfully.');
     } catch (err) {
-      setError('Failed to delete allocation.');
+      toast.error('Failed to delete allocation.');
     }
   };
 
   const handleOpenEditSubject = (item) => {
     setEditSubjectItem(item);
     setSubjectPeriodsForm(item.weeklyPeriods);
-    setError('');
-    setSuccess('');
     setSubjectDialogOpen(true);
   };
 
   const handleSaveSubjectPeriods = async () => {
-    setError('');
-    setSuccess('');
     if (!editSubjectItem) return;
 
     try {
@@ -178,11 +164,11 @@ const SubjectAllocation = () => {
         subjectCode: editSubjectItem.subjectCode,
         weeklyPeriods: Number(subjectPeriodsForm)
       });
-      setSuccess(`Updated periods required for ${editSubjectItem.subjectName} successfully.`);
+      toast.success(`Updated periods required for ${editSubjectItem.subjectName} successfully.`);
       setSubjectDialogOpen(false);
       await fetchData(); // Refresh grid to update calculations and periods
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update subject workload.');
+      toast.error(err.response?.data?.message || 'Failed to update subject workload.');
     }
   };
 
@@ -207,8 +193,7 @@ const SubjectAllocation = () => {
         </Button>
       </Box>
 
-      {success && <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError('')}>{error}</Alert>}
+      {/* react-toastify will handle allocation alerts */}
 
       <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 2 }}>

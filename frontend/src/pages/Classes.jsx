@@ -22,9 +22,9 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  Alert
+  MenuItem
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
@@ -36,8 +36,7 @@ const Classes = () => {
   const [classes, setClasses] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+
 
   const [form, setForm] = useState({
     className: 'Class 6',
@@ -73,25 +72,18 @@ const Classes = () => {
       className: school?.schoolType === 'Primary School' ? 'Class 1' : 'Class 6',
       section: ''
     });
-    setError('');
-    setSuccess('');
     setDialogOpen(true);
   };
 
   const handleOpenEdit = (item) => {
     setEditItem(item);
     setForm({ ...item });
-    setError('');
-    setSuccess('');
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    setError('');
-    setSuccess('');
-
     if (!form.className || !form.section) {
-      setError('Both class grade and section are required.');
+      toast.error('Both class grade and section are required.');
       return;
     }
 
@@ -99,16 +91,16 @@ const Classes = () => {
       if (editItem) {
         const res = await api.put(`/classes/${editItem._id}`, form);
         setClasses(prev => prev.map(c => c._id === editItem._id ? res.data : c));
-        setSuccess('Class section updated successfully.');
+        toast.success('Class section updated successfully.');
       } else {
         const res = await api.post('/classes', form);
         setClasses(prev => [...prev, res.data]);
-        setSuccess('Class section added successfully.');
+        toast.success('Class section added successfully.');
       }
       setDialogOpen(false);
       fetchClasses(); // Re-fetch to apply natural sorting
     } catch (err) {
-      setError(err.response?.data?.message || 'Error occurred while saving.');
+      toast.error(err.response?.data?.message || 'Error occurred while saving.');
     }
   };
 
@@ -116,14 +108,12 @@ const Classes = () => {
     if (!window.confirm('Are you sure you want to delete this section? All associated subject allocations and timetables will be permanently deleted.')) {
       return;
     }
-    setError('');
-    setSuccess('');
     try {
       await api.delete(`/classes/${id}`);
       setClasses(prev => prev.filter(c => c._id !== id));
-      setSuccess('Class section deleted successfully.');
+      toast.success('Class section deleted successfully.');
     } catch (err) {
-      setError('Failed to delete class section.');
+      toast.error('Failed to delete class section.');
     }
   };
 
@@ -148,8 +138,7 @@ const Classes = () => {
         </Button>
       </Box>
 
-      {success && <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setSuccess('')}>{success}</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError('')}>{error}</Alert>}
+      {/* react-toastify will handle class settings alerts */}
 
       <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
         <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 2 }}>

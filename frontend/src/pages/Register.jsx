@@ -13,12 +13,12 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  Alert,
   CircularProgress,
   Grid,
   InputAdornment,
   IconButton
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import {
   School as SchoolIcon,
   Visibility,
@@ -44,7 +44,6 @@ const Register = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -54,16 +53,15 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
     // Validations
     if (!formData.schoolName || !formData.headmasterName || !formData.mobile || !formData.email || !formData.password) {
-      setError('All fields are required.');
+      toast.error('All fields are required.');
       return;
     }
     
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      toast.error('Password must be at least 6 characters long.');
       return;
     }
 
@@ -74,7 +72,7 @@ const Register = () => {
     if (result.success) {
       navigate('/setup-wizard');
     } else {
-      setError(result.message);
+      toast.error(result.message);
     }
   };
 
@@ -113,8 +111,6 @@ const Register = () => {
               Create an account to automatically generate and manage timetables
             </Typography>
           </Box>
-
-          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
