@@ -44,7 +44,7 @@ const GenerateTimetable = () => {
   const [subjects, setSubjects] = useState([]);
   const [allocations, setAllocations] = useState([]);
   
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   
   // Quick Edit Dialog
@@ -79,7 +79,6 @@ const GenerateTimetable = () => {
 
   const fetchMetadata = async () => {
     setLoading(true);
-    setError('');
     try {
       const [cRes, tRes, sRes, aRes] = await Promise.all([
         api.get('/classes'),
@@ -92,7 +91,7 @@ const GenerateTimetable = () => {
       setSubjects(sRes.data);
       setAllocations(aRes.data);
     } catch (err) {
-      setError('Failed to load setup configurations.');
+      toast.error('Failed to load setup configurations.');
     } finally {
       setLoading(false);
     }
@@ -377,6 +376,28 @@ const GenerateTimetable = () => {
             sx={{ bgcolor: '#1a237e', px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold' }}
           >
             Go to Settings
+          </Button>
+        </Paper>
+      </Box>
+    );
+  }
+
+  if (!loading && allocations.length === 0) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <Paper sx={{ p: 5, borderRadius: 3, maxWidth: 500, width: '100%', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+          <Typography variant="h5" color="error" sx={{ fontWeight: 'bold', mb: 2 }}>
+            No Subject Allocations Found
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+            You have not allocated any subjects to teachers yet. Please configure allocations before generating the weekly timetable.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/allocation')}
+            sx={{ bgcolor: '#1a237e', px: 4, py: 1.5, borderRadius: 2, fontWeight: 'bold' }}
+          >
+            Go to Subject Allocation
           </Button>
         </Paper>
       </Box>

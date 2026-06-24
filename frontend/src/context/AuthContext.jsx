@@ -47,6 +47,35 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Poll school/user data every 5 minutes when the user is active and tab is visible
+  useEffect(() => {
+    if (!school) return;
+
+    let lastInteraction = Date.now();
+    const handleInteraction = () => {
+      lastInteraction = Date.now();
+    };
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    events.forEach(event => document.addEventListener(event, handleInteraction));
+
+    const checkAndFetch = () => {
+      const isTabVisible = document.visibilityState === 'visible';
+      const isRecentlyActive = Date.now() - lastInteraction < 5 * 60 * 1000;
+
+      if (isTabVisible && isRecentlyActive) {
+        fetchSchoolProfile();
+      }
+    };
+
+    const interval = setInterval(checkAndFetch, 5 * 60 * 1000);
+
+    return () => {
+      events.forEach(event => document.removeEventListener(event, handleInteraction));
+      clearInterval(interval);
+    };
+  }, [school]);
+
   const fetchAcademicYears = async () => {
     try {
       const response = await api.get('/school/academic-years');
@@ -58,6 +87,19 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('Failed to fetch academic years:', err.message);
+    }
+  };
+
+  const fetchSchoolProfile = async () => {
+    try {
+      const response = await api.get('/school/profile');
+      localStorage.setItem('school_info', JSON.stringify(response.data));
+      setSchool(response.data);
+    } catch (err) {
+      console.error('Failed to fetch school profile:', err.message);
+      if (err.response?.status === 401) {
+        logout();
+      }
     }
   };
 
